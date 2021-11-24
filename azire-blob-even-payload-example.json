@@ -1,0 +1,25 @@
+{
+    "topic": "/subscriptions/174bc656-84e5-4413-a417-0780f055d719/resourceGroups/AZR-C01-DV-152-01/providers/Microsoft.Storage/storageAccounts/p01d15201500001",
+    "subject": "/blobServices/default/containers/cloud-margin/blobs/cloud-maring-data-movementw.xlsx",
+    "eventType": "Microsoft.Storage.BlobCreated",
+    "id": "fd617e7e-001e-00de-095d-e13c8806c466",
+    "data": {
+        "api": "PutBlob",
+        "clientRequestId": "94f31b23-c838-49cb-7c6e-46d23c95e427",
+        "requestId": "fd617e7e-001e-00de-095d-e13c88000000",
+        "eTag": "0x8D9AF750F09FC73",
+        "contentType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "contentLength": 6192,
+        "blobType": "BlockBlob",
+        "blobUrl": "https://p01d15201500001.blob.core.windows.net/cloud-margin/cloud-maring-data-movementw.xlsx",
+        "url": "https://p01d15201500001.blob.core.windows.net/cloud-margin/cloud-maring-data-movementw.xlsx",
+        "sequencer": "0000000000000000000000000001d331000000000001b65f",
+        "identity": "$superuser",
+        "storageDiagnostics": {
+            "batchId": "2a0282ec-b006-0104-005d-e1dff6000000"
+        }
+    },
+    "dataVersion": "",
+    "metadataVersion": "1",
+    "eventTime": "2021-11-24T18:05:54.8004631Z"
+}
