@@ -1,0 +1,15 @@
+[
+    {
+        "id": "6acd373a-f9a4-4f1b-9d6b-2023c234e490",
+        "topic": "/subscriptions/409c0247-ed8c-4f74-82aa-db08c5b29bb9/resourceGroups/cloud-margin-poc-rg/providers/Microsoft.Storage/storageAccounts/cloudmarginpocstorage",
+        "subject": "",
+        "data": {
+            "validationCode": "039ED025-66A2-44B8-BA90-C50CB58364F9",
+            "validationUrl": "https://rp-canadacentral.eventgrid.azure.net:553/eventsubscriptions/cloud-margin-poc-subscription/validate?id=039ED025-66A2-44B8-BA90-C50CB58364F9&t=2021-11-25T15:52:06.2640743Z&apiVersion=2020-10-15-preview&token=b3cNCgD6R1VQ4hBWRc8ysunqHj8HqmfS85ZhTAJZ13w%3d"
+        },
+        "eventType": "Microsoft.EventGrid.SubscriptionValidationEvent",
+        "eventTime": "2021-11-25T15:52:06.2640743Z",
+        "metadataVersion": "1",
+        "dataVersion": "2"
+    }
+]

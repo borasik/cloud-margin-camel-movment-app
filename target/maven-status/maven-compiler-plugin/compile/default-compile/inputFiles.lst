@@ -1,8 +1,8 @@
-C:\Development\finastra\CloudMargin\cloud-margin-data-moving-tool-2\src\main\java\org\ffdc\data\platform\CloudMaringDataMovingToolApplication.java
-C:\Development\finastra\CloudMargin\cloud-margin-data-moving-tool-2\src\main\java\org\ffdc\data\platform\CloudMaringDataMovingToolRouter.java
-C:\Development\finastra\CloudMargin\cloud-margin-data-moving-tool-2\src\main\java\org\ffdc\data\platform\Models\AzureBlobCreateBlobEventPayload.java
-C:\Development\finastra\CloudMargin\cloud-margin-data-moving-tool-2\src\main\java\org\ffdc\data\platform\Models\StorageDiagnostics.java
-C:\Development\finastra\CloudMargin\cloud-margin-data-moving-tool-2\src\main\java\org\ffdc\data\platform\Models\Data.java
-C:\Development\finastra\CloudMargin\cloud-margin-data-moving-tool-2\src\main\java\org\ffdc\data\platform\CloudMarginDataMovingApplicationConfig.java
-C:\Development\finastra\CloudMargin\cloud-margin-data-moving-tool-2\src\main\java\org\ffdc\data\platform\Processor\RedeliveryProcessor.java
-C:\Development\finastra\CloudMargin\cloud-margin-data-moving-tool-2\src\main\java\org\ffdc\data\platform\Handler\ExitHandler.java
+C:\Development\finastra\CLOUD-MARGIN\cloud-margin-data-moving-tool\src\main\java\org\ffdc\data\platform\Models\Data.java
+C:\Development\finastra\CLOUD-MARGIN\cloud-margin-data-moving-tool\src\main\java\org\ffdc\data\platform\CloudMarginDataMovingApplicationConfig.java
+C:\Development\finastra\CLOUD-MARGIN\cloud-margin-data-moving-tool\src\main\java\org\ffdc\data\platform\Handler\ExitHandler.java
+C:\Development\finastra\CLOUD-MARGIN\cloud-margin-data-moving-tool\src\main\java\org\ffdc\data\platform\Models\AzureBlobCreateBlobEventPayload.java
+C:\Development\finastra\CLOUD-MARGIN\cloud-margin-data-moving-tool\src\main\java\org\ffdc\data\platform\Models\StorageDiagnostics.java
+C:\Development\finastra\CLOUD-MARGIN\cloud-margin-data-moving-tool\src\main\java\org\ffdc\data\platform\CloudMarginDataMovingToolRouter.java
+C:\Development\finastra\CLOUD-MARGIN\cloud-margin-data-moving-tool\src\main\java\org\ffdc\data\platform\CloudMarginDataMovingToolApplication.java
+C:\Development\finastra\CLOUD-MARGIN\cloud-margin-data-moving-tool\src\main\java\org\ffdc\data\platform\Processor\RedeliveryProcessor.java
