@@ -34,8 +34,7 @@ public class CloudMarginDataMovingApplicationConfig {
 	}
 	
 	@Bean
-	protected DataLakeServiceClient dataLakeFileSystemClient() {
-		LOG.info("sasToken {}, storage account url {}", sasToken, storageAccountUrl);
+	protected DataLakeServiceClient dataLakeFileSystemClient() {		
 		return new DataLakeServiceClientBuilder()
 				.endpoint(storageAccountUrl + "?" + sasToken)														
 				.buildClient();
