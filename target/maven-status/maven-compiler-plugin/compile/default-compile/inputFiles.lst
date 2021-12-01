@@ -1,6 +1,7 @@
 C:\Development\finastra\CLOUD-MARGIN\cloud-margin-data-moving-tool\src\main\java\org\ffdc\data\platform\Handler\ExitHandler.java
 C:\Development\finastra\CLOUD-MARGIN\cloud-margin-data-moving-tool\src\main\java\org\ffdc\data\platform\Models\AzureBlobCreateBlobEventPayload\Data.java
 C:\Development\finastra\CLOUD-MARGIN\cloud-margin-data-moving-tool\src\main\java\org\ffdc\data\platform\Models\AzureBlobSubscriptionValidationResponseBody.java
+C:\Development\finastra\CLOUD-MARGIN\cloud-margin-data-moving-tool\src\main\java\org\ffdc\data\platform\exceptions\WrongAzureDataLakeEventTypeException.java
 C:\Development\finastra\CLOUD-MARGIN\cloud-margin-data-moving-tool\src\main\java\org\ffdc\data\platform\Models\AzureBlobSubscriptionValidationPayload\Data.java
 C:\Development\finastra\CLOUD-MARGIN\cloud-margin-data-moving-tool\src\main\java\org\ffdc\data\platform\exceptions\NullAzureBlobSubscriptionValidationPayload.java
 C:\Development\finastra\CLOUD-MARGIN\cloud-margin-data-moving-tool\src\main\java\org\ffdc\data\platform\CloudMarginDataMovingApplicationConfig.java

@@ -147,10 +147,11 @@ public class CloudMarginDataMovingToolRouter extends RouteBuilder {
             })
             .log("Pulling Data Set From: ${exchangeProperty.blobUrl}")
             .to("log:?level=INFO&showBody=true&logMask=true")
+            // ! TODO: Use blobUrl
             .to("azure-storage-datalake:p01d15201500001/cloud-margin?operation=getFile&fileName=test.csv&dataLakeServiceClient=#dataLakeFileSystemClient&bridgeErrorHandler=false")
             .log("Data Set has been Pulled Successfully from: ${exchangeProperty.blobUrl}")
             .to("log:?level=INFO&showBody=true&logMask=true")
-            .log(String.format("Pushing Data Set to %s://%s:%s/%s%s", sftpSchema, sftpHost, sftpPort, sftpHost, sftpPath))
+            .log(String.format("Pushing Data Set to %s://%s:%s/%s", sftpSchema, sftpHost, sftpPort, sftpPath))
             .to("log:?level=INFO&showBody=true&logMask=true")
             .to(fromFtpUrl.toString())
             .endRest();
