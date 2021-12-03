@@ -25,10 +25,11 @@ import org.ffdc.data.platform.Models.AzureBlobSubscriptionValidationResponseBody
 import org.ffdc.data.platform.Models.AzureBlobCreateBlobEventPayload.AzureBlobCreateBlobEventPayload;
 import org.ffdc.data.platform.Models.AzureBlobSubscriptionValidationPayload.AzureBlobSubscriptionValidationPayload;
 import org.ffdc.data.platform.Processor.RedeliveryProcessor;
-import org.ffdc.data.platform.exceptions.NullAzureBlobCreateBlobEventPayload;
-import org.ffdc.data.platform.exceptions.NullAzureBlobSubscriptionValidationPayload;
-import org.ffdc.data.platform.exceptions.WrongAzureBlobMessageType;
+import org.ffdc.data.platform.exceptions.NullAzureBlobCreateBlobEventPayloadException;
+import org.ffdc.data.platform.exceptions.NullAzureBlobSubscriptionValidationPayloadException;
+import org.ffdc.data.platform.exceptions.WrongAzureBlobMessageTypeException;
 import org.ffdc.data.platform.exceptions.WrongAzureDataLakeEventTypeException;
+import org.ffdc.data.platform.exceptions.BlobUrlNotExistsOrEmptyException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -114,7 +115,7 @@ public class CloudMarginDataMovingToolRouter extends RouteBuilder {
                         CloudMarginDataMovingToolRouterLog.info(String.format("Blob Event 'SubscriptionDeletion' From Azure Data Lake Received: %s...Ignoring...", body));
                     } 
                     else {
-                            throw new WrongAzureBlobMessageType("Request Type Received not Recognized (nor blob Event Request nor Validation Request). Location: org.ffdc.data.platform.CloudMarginDataMovingToolRouter");
+                            throw new WrongAzureBlobMessageTypeException("Request Type Received not Recognized (nor blob Event Request nor Validation Request). Location: org.ffdc.data.platform.CloudMarginDataMovingToolRouter");
                         }
                     }
             }).choice()                
@@ -135,10 +136,19 @@ public class CloudMarginDataMovingToolRouter extends RouteBuilder {
 
                 if(azureBlobCreateBlobEventPayload == null)
                 {
-                    throw new NullAzureBlobCreateBlobEventPayload("AzureBlobCreateBlobEventPayload[] is Null. Location: org.ffdc.data.platform.CloudMarginDataMovingToolRouter");
+                    throw new NullAzureBlobCreateBlobEventPayloadException("AzureBlobCreateBlobEventPayload[] is Null. Location: org.ffdc.data.platform.CloudMarginDataMovingToolRouter");
                 }
 
+                if(azureBlobCreateBlobEventPayload[0] == null || azureBlobCreateBlobEventPayload[0].getData() == null || 
+                   azureBlobCreateBlobEventPayload[0].getData().getUrl().isEmpty() || azureBlobCreateBlobEventPayload[0].getData().getUrl().isBlank())
+                {
+                       throw new BlobUrlNotExistsOrEmptyException("Blob Url Received in Event Message is Empty or not Exists. Location: Location: org.ffdc.data.platform.CloudMarginDataMovingToolRouter");
+                }
+                
+                URL blobUrl = new URL(azureBlobCreateBlobEventPayload[0].getData().getUrl());
                 exchange.setProperty("blobUrl", azureBlobCreateBlobEventPayload[0].getData().getUrl());
+                
+                https://p01d15201500002.blob.core.windows.net/alex2/trades-v1-27a8371b-9317-43ed-82c0-39835cf1ec03/2020-05-15T06:23:56-01:00.json
 
                 if(!azureBlobCreateBlobEventPayload[0].getEventType().equals("Microsoft.Storage.BlobCreated"))
                 {
