@@ -1,4 +1,4 @@
-package org.ffdc.data.platform.exceptions;
+package org.ffdc.data.platform.Exceptions;
 
 public class NullAzureBlobCreateBlobEventPayloadException extends Exception {
     public NullAzureBlobCreateBlobEventPayloadException(String errorMessage) {

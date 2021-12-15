@@ -1,11 +1,1 @@
-org\ffdc\data\platform\Models\AzureBlobCreateBlobEventPayload\StorageDiagnostics.class
-org\ffdc\data\platform\CloudMarginDataMovingToolRouter$1.class
-org\ffdc\data\platform\CloudMarginDataMovingToolRouter.class
-org\ffdc\data\platform\Models\AzureBlobSubscriptionValidationPayload\Data.class
-org\ffdc\data\platform\CloudMarginDataMovingApplicationConfig.class
-org\ffdc\data\platform\Models\AzureBlobSubscriptionValidationPayload\AzureBlobSubscriptionValidationPayload.class
-org\ffdc\data\platform\Models\AzureBlobCreateBlobEventPayload\AzureBlobCreateBlobEventPayload.class
 org\ffdc\data\platform\Handler\ExitHandler.class
-org\ffdc\data\platform\Processor\RedeliveryProcessor.class
-org\ffdc\data\platform\CloudMarginDataMovingToolApplication.class
-org\ffdc\data\platform\Models\AzureBlobCreateBlobEventPayload\Data.class

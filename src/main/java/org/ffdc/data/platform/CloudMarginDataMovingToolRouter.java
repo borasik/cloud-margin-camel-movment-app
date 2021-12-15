@@ -2,10 +2,6 @@ package org.ffdc.data.platform;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.time.Instant;
-import java.util.Date;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
@@ -19,22 +15,30 @@ import org.apache.camel.model.rest.RestBindingMode;
 import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.http.client.utils.URIBuilder;
 import org.springframework.stereotype.Component;
+
+import jdk.internal.org.jline.utils.Log;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.ffdc.data.platform.Exceptions.ArgumentEmptyOrBlankException;
+import org.ffdc.data.platform.Exceptions.BlobUrlNotExistsOrEmptyException;
+import org.ffdc.data.platform.Exceptions.NullAzureBlobCreateBlobEventPayloadException;
+import org.ffdc.data.platform.Exceptions.NullAzureBlobSubscriptionValidationPayloadException;
+import org.ffdc.data.platform.Exceptions.WrongAzureBlobMessageTypeException;
+import org.ffdc.data.platform.Exceptions.WrongAzureDataLakeEventTypeException;
+import org.ffdc.data.platform.Helpers.UrlParser;
 import org.ffdc.data.platform.Models.AzureBlobSubscriptionValidationResponseBody;
 import org.ffdc.data.platform.Models.AzureBlobCreateBlobEventPayload.AzureBlobCreateBlobEventPayload;
 import org.ffdc.data.platform.Models.AzureBlobSubscriptionValidationPayload.AzureBlobSubscriptionValidationPayload;
 import org.ffdc.data.platform.Processor.RedeliveryProcessor;
-import org.ffdc.data.platform.exceptions.NullAzureBlobCreateBlobEventPayloadException;
-import org.ffdc.data.platform.exceptions.NullAzureBlobSubscriptionValidationPayloadException;
-import org.ffdc.data.platform.exceptions.WrongAzureBlobMessageTypeException;
-import org.ffdc.data.platform.exceptions.WrongAzureDataLakeEventTypeException;
-import org.ffdc.data.platform.exceptions.BlobUrlNotExistsOrEmptyException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Component
 public class CloudMarginDataMovingToolRouter extends RouteBuilder {
+
+    @Autowired
+    private UrlParser urlParser;
 
     @Value("${app.general.max.redelivery.attempts:2}")
     protected int maxRedeliveryAttempts = 0;
@@ -137,7 +141,7 @@ public class CloudMarginDataMovingToolRouter extends RouteBuilder {
                 if(azureBlobCreateBlobEventPayload == null)
                 {
                     throw new NullAzureBlobCreateBlobEventPayloadException("AzureBlobCreateBlobEventPayload[] is Null. Location: org.ffdc.data.platform.CloudMarginDataMovingToolRouter");
-                }
+                }               
 
                 if(azureBlobCreateBlobEventPayload[0] == null || azureBlobCreateBlobEventPayload[0].getData() == null || 
                    azureBlobCreateBlobEventPayload[0].getData().getUrl().isEmpty() || azureBlobCreateBlobEventPayload[0].getData().getUrl().isBlank())
@@ -145,15 +149,43 @@ public class CloudMarginDataMovingToolRouter extends RouteBuilder {
                        throw new BlobUrlNotExistsOrEmptyException("Blob Url Received in Event Message is Empty or not Exists. Location: Location: org.ffdc.data.platform.CloudMarginDataMovingToolRouter");
                 }
                 
-                URL blobUrl = new URL(azureBlobCreateBlobEventPayload[0].getData().getUrl());
-                exchange.setProperty("blobUrl", azureBlobCreateBlobEventPayload[0].getData().getUrl());
-                
-                https://p01d15201500002.blob.core.windows.net/alex2/trades-v1-27a8371b-9317-43ed-82c0-39835cf1ec03/2020-05-15T06:23:56-01:00.json
-
                 if(!azureBlobCreateBlobEventPayload[0].getEventType().equals("Microsoft.Storage.BlobCreated"))
                 {
                     throw new WrongAzureDataLakeEventTypeException("Data Lake Event Type Received not Equal to Microsoft.Storage.BlobCreated");
                 }
+
+                URI blobUrl = new URI(azureBlobCreateBlobEventPayload[0].getData().getUrl());
+                String storageName = urlParser.getStorageName(blobUrl);
+                String containerTenantName = urlParser.getContainerTenantName(blobUrl);
+                String dataSetId = urlParser.getDataSetId(blobUrl);
+                String fileName = urlParser.getFileName(blobUrl);
+
+                if(containerTenantName.isEmpty() || containerTenantName.isBlank()) {
+                    throw new ArgumentEmptyOrBlankException("Storage Name is Blank or Empty. Location: org.ffdc.data.platform.CloudMarginDataMovingToolRouter ");
+                }
+
+                if(storageName.isEmpty() || storageName.isBlank()) {
+                    throw new ArgumentEmptyOrBlankException("container Tenant Name is Blank or Empty. Location: org.ffdc.data.platform.CloudMarginDataMovingToolRouter ");
+                }
+
+                if(dataSetId.isEmpty() || dataSetId.isBlank()) {
+                    throw new ArgumentEmptyOrBlankException("Data Set Id is Blank or Empty. Location: org.ffdc.data.platform.CloudMarginDataMovingToolRouter ");
+                }
+
+                if(fileName.isEmpty() || fileName.isBlank()) {
+                    throw new ArgumentEmptyOrBlankException("File Name is Blank or Empty. Location: org.ffdc.data.platform.CloudMarginDataMovingToolRouter ");
+                }
+
+                exchange.setProperty("storageName", storageName);
+                exchange.setProperty("containerTenantName", containerTenantName);                            
+                exchange.setProperty("dataSetId", dataSetId);                            
+                exchange.setProperty("fileName", fileName);
+                
+                Log.info("storageName: " + storageName);
+                Log.info("containerTenantName: " + containerTenantName);
+                Log.info("dataSetId: " + dataSetId);
+                Log.info("fileName: " + fileName);
+                
             })
             .log("Pulling Data Set From: ${exchangeProperty.blobUrl}")
             .to("log:?level=INFO&showBody=true&logMask=true")
@@ -175,7 +207,7 @@ public class CloudMarginDataMovingToolRouter extends RouteBuilder {
 
                 if(azureBlobSubscriptionValidationPayload == null)
                 {
-                    throw new NullAzureBlobSubscriptionValidationPayload("AzureBlobSubscriptionValidationPayload[] is Null. Location: org.ffdc.data.platform.CloudMarginDataMovingToolRouter");
+                    throw new NullAzureBlobSubscriptionValidationPayloadException("AzureBlobSubscriptionValidationPayload[] is Null. Location: org.ffdc.data.platform.CloudMarginDataMovingToolRouter");
                 }
                 
                 String validationCode = azureBlobSubscriptionValidationPayload[0].getData().getValidationCode();                    
