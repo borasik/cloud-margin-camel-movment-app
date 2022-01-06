@@ -1,6 +1,7 @@
 package org.ffdc.data.platform;
 
 import java.net.URI;
+
 import java.net.URISyntaxException;
 
 import org.apache.camel.Exchange;
