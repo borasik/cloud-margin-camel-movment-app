@@ -16,7 +16,6 @@ import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.http.client.utils.URIBuilder;
 import org.springframework.stereotype.Component;
 
-import jdk.internal.org.jline.utils.Log;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -57,6 +56,8 @@ public class CloudMarginDataMovingToolRouter extends RouteBuilder {
     protected String sftpSecret;
     @Value("${app.sftp.path}")
     protected String sftpPath;
+
+    protected String fileName="";
 
     private static final Logger CloudMarginDataMovingToolRouterLog = LoggerFactory.getLogger(CloudMarginDataMovingToolRouter.class);
     private static final String Is_Azure_DataLake_Validation_Subscription_Message = "isAzureDataLakeValidationSubscriptionMessage";
@@ -129,7 +130,7 @@ public class CloudMarginDataMovingToolRouter extends RouteBuilder {
                 .when(exchangeProperty(Is_Azure_DataLake_Validation_Subscription_Message)
                     .isEqualTo("true"))
                         .to("direct:blob-azure-subscription-handshake-response");
-
+                        
         from("direct:get-data-set-from-azure-dl")
             .log(LoggingLevel.INFO, "Start Pulling Data Set From ADSL...")            
             .routeId("get-data-set-from-azure-dl")
@@ -158,7 +159,7 @@ public class CloudMarginDataMovingToolRouter extends RouteBuilder {
                 String storageName = urlParser.getStorageName(blobUrl);
                 String containerTenantName = urlParser.getContainerTenantName(blobUrl);
                 String dataSetId = urlParser.getDataSetId(blobUrl);
-                String fileName = urlParser.getFileName(blobUrl);
+                fileName = urlParser.getFileName(blobUrl);
 
                 if(containerTenantName.isEmpty() || containerTenantName.isBlank()) {
                     throw new ArgumentEmptyOrBlankException("Storage Name is Blank or Empty. Location: org.ffdc.data.platform.CloudMarginDataMovingToolRouter ");
@@ -181,23 +182,25 @@ public class CloudMarginDataMovingToolRouter extends RouteBuilder {
                 exchange.setProperty("dataSetId", dataSetId);                            
                 exchange.setProperty("fileName", fileName);
                 
-                Log.info("storageName: " + storageName);
-                Log.info("containerTenantName: " + containerTenantName);
-                Log.info("dataSetId: " + dataSetId);
-                Log.info("fileName: " + fileName);
-                
+                CloudMarginDataMovingToolRouterLog.info("storageName: " + storageName);
+                CloudMarginDataMovingToolRouterLog.info("containerTenantName: " + containerTenantName);
+                CloudMarginDataMovingToolRouterLog.info("dataSetId: " + dataSetId);
+                CloudMarginDataMovingToolRouterLog.info("fileName: " + fileName);
+                System.out.println("DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD: fileName"+fileName);
             })
             .log("Pulling Data Set From: ${exchangeProperty.blobUrl}")
+            .log("######## testing filename : ${exchangeProperty.fileName} ")
+
             .to("log:?level=INFO&showBody=true&logMask=true")
-            // ! TODO: Use blobUrl
-            .to("azure-storage-datalake:p01d15201500001/cloud-margin?operation=getFile&fileName=test.csv&dataLakeServiceClient=#dataLakeFileSystemClient&bridgeErrorHandler=false")
+            //.to("azure-storage-datalake:p01d15201500001/cloud-margin?operation=getFile&fileName={fileName}&dataLakeServiceClient=#dataLakeFileSystemClient&bridgeErrorHandler=false")
+            .toD("azure-storage-datalake:p01d15201500001/cloud-margin?operation=getFile&fileName={fileName}&dataLakeServiceClient=#dataLakeFileSystemClient&bridgeErrorHandler=false")
             .log("Data Set has been Pulled Successfully from: ${exchangeProperty.blobUrl}")
             .to("log:?level=INFO&showBody=true&logMask=true")
             .log(String.format("Pushing Data Set to %s://%s:%s/%s", sftpSchema, sftpHost, sftpPort, sftpPath))
             .to("log:?level=INFO&showBody=true&logMask=true")
             .to(fromFtpUrl.toString())
             .endRest();
-
+            System.out.println("EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE: fileName"+fileName);
         from("direct:blob-azure-subscription-handshake-response")
             .log("Starting Subscription Validation Process...")
             .unmarshal()
