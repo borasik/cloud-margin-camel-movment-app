@@ -79,7 +79,8 @@ public class CloudMarginDataMovingToolRouter extends RouteBuilder {
                     .addParameter("readLockMinAge", "1m")
                     .addParameter("readLockTimeout", "70000")
                     .addParameter("readLockCheckInterval", "5000")
-                    .addParameter("stepwise", "false")                
+                    .addParameter("stepwise", "false")    
+                    .addParameter("useUserKnownHostsFile", "false")            
                     .build();
        
 
@@ -103,6 +104,11 @@ public class CloudMarginDataMovingToolRouter extends RouteBuilder {
                     String body = exchange.getIn().getBody(String.class);
 
                     String eventSubscriptionValidationHeader = exchange.getIn().getHeader("aeg-event-type", String.class);
+
+                    if(eventSubscriptionValidationHeader == null) {
+                        throw new ArgumentEmptyOrBlankException("Event Subscription Validation Header Null. Location: org.ffdc.data.platform.CloudMarginDataMovingToolRouter");
+                    }
+
                     CloudMarginDataMovingToolRouterLog.info(String.format("Event Subscription Validation Header Received: %s", eventSubscriptionValidationHeader));
 
                     CloudMarginDataMovingToolRouterLog.info(String.format("Request From Azure Data Lake Received: %s", body));                    
@@ -181,10 +187,10 @@ public class CloudMarginDataMovingToolRouter extends RouteBuilder {
                 exchange.setProperty("dataSetId", dataSetId);                            
                 exchange.setProperty("fileName", fileName);
                 
-                Log.info("storageName: " + storageName);
-                Log.info("containerTenantName: " + containerTenantName);
-                Log.info("dataSetId: " + dataSetId);
-                Log.info("fileName: " + fileName);
+                CloudMarginDataMovingToolRouterLog.info("storageName: " + storageName);
+                CloudMarginDataMovingToolRouterLog.info("containerTenantName: " + containerTenantName);
+                CloudMarginDataMovingToolRouterLog.info("dataSetId: " + dataSetId);
+                CloudMarginDataMovingToolRouterLog.info("fileName: " + fileName);
                 
             })
             .log("Pulling Data Set From: ${exchangeProperty.blobUrl}")
@@ -195,6 +201,8 @@ public class CloudMarginDataMovingToolRouter extends RouteBuilder {
             .to("log:?level=INFO&showBody=true&logMask=true")
             .log(String.format("Pushing Data Set to %s://%s:%s/%s", sftpSchema, sftpHost, sftpPort, sftpPath))
             .to("log:?level=INFO&showBody=true&logMask=true")
+            .setHeader("CamelFileName", simple("alex.csv"))
+            //.to("file://C:/Users/ab5645/Downloads/CloudMarginCamel")
             .to(fromFtpUrl.toString())
             .endRest();
 
