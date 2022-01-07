@@ -16,7 +16,7 @@ public class UrlParserTest {
 
     @Test
     public void getStorageNameFromValidUrl() throws URISyntaxException  {
-        URI url = new URI("https://p01d15201500002.blob.core.windows.net/alex2/trades-v1-27a8371b-9317-43ed-82c0-39835cf1ec03/2020-05-15T06:23:56-01:00.json");
+        URI url = new URI("https://p01d15201500002.blob.core.windows.net/container-tenant-name/trades-v1-27a8371b-9317-43ed-82c0-39835cf1ec03/2020-05-15T06:23:56-01:00.json");
         UrlParser urlParser = new UrlParser();
         String storageName = urlParser.getStorageName(url);
 
@@ -26,10 +26,32 @@ public class UrlParserTest {
 
     @Test
     public void getContainerTenantNameFromValidUrl() throws URISyntaxException  {
-        URI url = new URI("https://p01d15201500002.blob.core.windows.net/alex2/trades-v1-27a8371b-9317-43ed-82c0-39835cf1ec03/2020-05-15T06:23:56-01:00.json");
+        URI url = new URI("https://p01d15201500002.blob.core.windows.net/container-tenant-name/trades-v1-27a8371b-9317-43ed-82c0-39835cf1ec03/2020-05-15T06:23:56-01:00.json");
         UrlParser urlParser = new UrlParser();
         String containerName = urlParser.getContainerTenantName(url);
 
         assertNotEquals("", containerName);
+        assertEquals("container-tenant-name", containerName);
+    }
+
+    @Test
+    public void getFileExtensionFromValidUrl() throws URISyntaxException  {
+        URI url = new URI("https://p01d15201500002.blob.core.windows.net/container-tenant-name/trades-v1-27a8371b-9317-43ed-82c0-39835cf1ec03/2020-05-15T06:23:56-01:00.json");
+        UrlParser urlParser = new UrlParser();
+        String extension = urlParser.getFileExtension(url);
+
+        assertNotEquals("", extension);
+        assertEquals("json", extension);
+    }
+
+    @Test
+    public void getFileNameFromValidUrl() throws URISyntaxException  {
+        URI url = new URI("https://p01d15201500002.blob.core.windows.net/container-tenant-name/trades-v1-27a8371b-9317-43ed-82c0-39835cf1ec03/2020-05-15T06:23:56-01:00.json");
+        UrlParser urlParser = new UrlParser();
+        String extension = urlParser.getFileName(url);
+
+        assertNotEquals("", extension);
+        assertEquals("2020-05-15T06:23:56-01:00", extension);
     }
 }
+

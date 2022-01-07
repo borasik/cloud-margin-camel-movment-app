@@ -2,6 +2,10 @@ package org.ffdc.data.platform;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Map;
+import java.util.Objects;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
@@ -105,6 +109,10 @@ public class CloudMarginDataMovingToolRouter extends RouteBuilder {
 
                     String eventSubscriptionValidationHeader = exchange.getIn().getHeader("aeg-event-type", String.class);
 
+                    Map<String, Object> headers = exchange.getIn().getHeaders();
+
+                    CloudMarginDataMovingToolRouterLog.info("Headers: " + headers.toString());
+
                     if(eventSubscriptionValidationHeader == null) {
                         throw new ArgumentEmptyOrBlankException("Event Subscription Validation Header Null. Location: org.ffdc.data.platform.CloudMarginDataMovingToolRouter");
                     }
@@ -165,6 +173,7 @@ public class CloudMarginDataMovingToolRouter extends RouteBuilder {
                 String containerTenantName = urlParser.getContainerTenantName(blobUrl);
                 String dataSetId = urlParser.getDataSetId(blobUrl);
                 String fileName = urlParser.getFileName(blobUrl);
+                String fileExtension = urlParser.getFileExtension(blobUrl);
 
                 if(containerTenantName.isEmpty() || containerTenantName.isBlank()) {
                     throw new ArgumentEmptyOrBlankException("Storage Name is Blank or Empty. Location: org.ffdc.data.platform.CloudMarginDataMovingToolRouter ");
@@ -180,29 +189,38 @@ public class CloudMarginDataMovingToolRouter extends RouteBuilder {
 
                 if(fileName.isEmpty() || fileName.isBlank()) {
                     throw new ArgumentEmptyOrBlankException("File Name is Blank or Empty. Location: org.ffdc.data.platform.CloudMarginDataMovingToolRouter ");
-                }
-
-                exchange.setProperty("storageName", storageName);
-                exchange.setProperty("containerTenantName", containerTenantName);                            
-                exchange.setProperty("dataSetId", dataSetId);                            
-                exchange.setProperty("fileName", fileName);
+                }               
                 
                 CloudMarginDataMovingToolRouterLog.info("storageName: " + storageName);
                 CloudMarginDataMovingToolRouterLog.info("containerTenantName: " + containerTenantName);
                 CloudMarginDataMovingToolRouterLog.info("dataSetId: " + dataSetId);
                 CloudMarginDataMovingToolRouterLog.info("fileName: " + fileName);
+                CloudMarginDataMovingToolRouterLog.info("fileExtension: " + fileExtension);
+
+                String commandToPullDataFromAzureDataLake = "azure-storage-datalake:" + storageName + 
+                                                            "/" + containerTenantName +                                                             
+                                                            "?operation=getFile" + 
+                                                            "&fileName=" + 
+                                                             dataSetId + "/" + fileName + "." + fileExtension + 
+                                                             "&dataLakeServiceClient=#dataLakeFileSystemClient&bridgeErrorHandler=false";
+                exchange.setProperty("commandToPullDataFromAzureDataLake", commandToPullDataFromAzureDataLake);
+                CloudMarginDataMovingToolRouterLog.info("commandToPullDataFromAzureDataLake: " + commandToPullDataFromAzureDataLake);
+
+                String fullFileNameToStore = fileName + "_" + new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date()) + "." + fileExtension;
+                exchange.setProperty("CamelFileName", fullFileNameToStore);
                 
             })
-            .log("Pulling Data Set From: ${exchangeProperty.blobUrl}")
+            .log("Pulling Data Set From: ${exchangeProperty.commandToPullDataFromAzureDataLake}")         
             .to("log:?level=INFO&showBody=true&logMask=true")
-            // ! TODO: Use blobUrl
-            .to("azure-storage-datalake:p01d15201500001/cloud-margin?operation=getFile&fileName=test.csv&dataLakeServiceClient=#dataLakeFileSystemClient&bridgeErrorHandler=false")
-            .log("Data Set has been Pulled Successfully from: ${exchangeProperty.blobUrl}")
+            // ! TODO: Use blobUrl          
+            .toD("${exchangeProperty.commandToPullDataFromAzureDataLake}")
+            //.to("azure-storage-datalake:p01d15201500001/cloud-margin?operation=getFile&fileName=cloud-margin-data-set-id/test.csv&dataLakeServiceClient=#dataLakeFileSystemClient&bridgeErrorHandler=false")
+            .log("Data Set has been Pulled Successfully from: ${exchangeProperty.commandToPullDataFromAzureDataLake}")
             .to("log:?level=INFO&showBody=true&logMask=true")
             .log(String.format("Pushing Data Set to %s://%s:%s/%s", sftpSchema, sftpHost, sftpPort, sftpPath))
             .to("log:?level=INFO&showBody=true&logMask=true")
-            .setHeader("CamelFileName", simple("alex.csv"))
-            //.to("file://C:/Users/ab5645/Downloads/CloudMarginCamel")
+            .log("Setting Up Header for CamelFileName to Upload to SFTP: " + "${exchangeProperty.CamelFileName}")
+            .setHeader("CamelFileName", simple("${exchangeProperty.CamelFileName}"))
             .to(fromFtpUrl.toString())
             .endRest();
 

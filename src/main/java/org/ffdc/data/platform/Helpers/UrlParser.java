@@ -32,7 +32,7 @@ public class UrlParser {
     }
 
     public String getDataSetId(URI uriToParse){
-        String path = uriToParse.getPath();
+        String path = uriToParse.getPath().substring(1, uriToParse.getPath().length());
         String[] pathArray = path.split("\\/");
 
         if(pathArray.length > 1)
@@ -44,12 +44,32 @@ public class UrlParser {
     }
 
     public String getFileName(URI uriToParse){
-        String path = uriToParse.getPath();
+        String path = uriToParse.getPath().substring(1, uriToParse.getPath().length());
         String[] pathArray = path.split("\\/");
 
         if(pathArray.length > 2)
         {
-            return pathArray[2];
+            String[] fileNameSplitted = pathArray[2].split("\\.");
+            if(fileNameSplitted.length == 2)
+            {
+                return fileNameSplitted[0];
+            }
+        }
+
+        return "";
+    }
+
+    public String getFileExtension(URI uriToParse){
+        String path = uriToParse.getPath().substring(1, uriToParse.getPath().length());
+        String[] pathArray = path.split("\\/");
+
+        if(pathArray.length > 2)
+        {            
+            String[] fileNameSplitted = pathArray[2].split("\\.");
+            if(fileNameSplitted.length == 2)
+            {
+                return fileNameSplitted[1];
+            }
         }
 
         return "";
