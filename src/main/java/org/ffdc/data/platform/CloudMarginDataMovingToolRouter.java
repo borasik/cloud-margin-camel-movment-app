@@ -187,14 +187,14 @@ public class CloudMarginDataMovingToolRouter extends RouteBuilder {
                 CloudMarginDataMovingToolRouterLog.info("containerTenantName: " + containerTenantName);
                 CloudMarginDataMovingToolRouterLog.info("dataSetId: " + dataSetId);
                 CloudMarginDataMovingToolRouterLog.info("fileName: " + fileName);
-                System.out.println("DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD: fileName"+fileName);
+                System.out.println("DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD: fileName"+exchange.getProperty("fileName"));
             })
             .log("Pulling Data Set From: ${exchangeProperty.blobUrl}")
             .log("######## testing filename : ${exchangeProperty.fileName} ")
-
+            .log("MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM : ${exchangeProperty.fileName} ")
             .to("log:?level=INFO&showBody=true&logMask=true")
             //.to("azure-storage-datalake:p01d15201500001/cloud-margin?operation=getFile&fileName={fileName}&dataLakeServiceClient=#dataLakeFileSystemClient&bridgeErrorHandler=false")
-            .toD("azure-storage-datalake:p01d15201500001/cloud-margin?operation=getFile&fileName={fileName}&dataLakeServiceClient=#dataLakeFileSystemClient&bridgeErrorHandler=false")
+            .toD("azure-storage-datalake:p01d15201500001/cloud-margin?operation=getFile&fileName=${exchangeProperty.fileName}&dataLakeServiceClient=#dataLakeFileSystemClient&bridgeErrorHandler=false")
             .log("Data Set has been Pulled Successfully from: ${exchangeProperty.blobUrl}")
             .to("log:?level=INFO&showBody=true&logMask=true")
             .log(String.format("Pushing Data Set to %s://%s:%s/%s", sftpSchema, sftpHost, sftpPort, sftpPath))
