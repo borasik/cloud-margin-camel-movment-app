@@ -191,11 +191,11 @@ public class CloudMarginDataMovingToolRouter extends RouteBuilder {
                     throw new ArgumentEmptyOrBlankException("File Name is Blank or Empty. Location: org.ffdc.data.platform.CloudMarginDataMovingToolRouter ");
                 }               
                 
-                CloudMarginDataMovingToolRouterLog.info("storageName: " + storageName);
-                CloudMarginDataMovingToolRouterLog.info("containerTenantName: " + containerTenantName);
-                CloudMarginDataMovingToolRouterLog.info("dataSetId: " + dataSetId);
-                CloudMarginDataMovingToolRouterLog.info("fileName: " + fileName);
-                CloudMarginDataMovingToolRouterLog.info("fileExtension: " + fileExtension);
+                CloudMarginDataMovingToolRouterLog.info(String.format("storageName: %s", storageName));
+                CloudMarginDataMovingToolRouterLog.info(String.format("containerTenantName: %s", containerTenantName));
+                CloudMarginDataMovingToolRouterLog.info(String.format("dataSetId: %s", dataSetId));
+                CloudMarginDataMovingToolRouterLog.info(String.format("fileName: %s", fileName));
+                CloudMarginDataMovingToolRouterLog.info(String.format("fileExtension: %s", fileExtension));
 
                 String commandToPullDataFromAzureDataLake = "azure-storage-datalake:" + storageName + 
                                                             "/" + containerTenantName +                                                             
@@ -204,17 +204,15 @@ public class CloudMarginDataMovingToolRouter extends RouteBuilder {
                                                              dataSetId + "/" + fileName + "." + fileExtension + 
                                                              "&dataLakeServiceClient=#dataLakeFileSystemClient&bridgeErrorHandler=false";
                 exchange.setProperty("commandToPullDataFromAzureDataLake", commandToPullDataFromAzureDataLake);
-                CloudMarginDataMovingToolRouterLog.info("commandToPullDataFromAzureDataLake: " + commandToPullDataFromAzureDataLake);
+                CloudMarginDataMovingToolRouterLog.info(String.format("commandToPullDataFromAzureDataLake: %s", commandToPullDataFromAzureDataLake);
 
                 String fullFileNameToStore = fileName + "_" + new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date()) + "." + fileExtension;
                 exchange.setProperty("CamelFileName", fullFileNameToStore);
                 
             })
             .log("Pulling Data Set From: ${exchangeProperty.commandToPullDataFromAzureDataLake}")         
-            .to("log:?level=INFO&showBody=true&logMask=true")
-            // ! TODO: Use blobUrl          
-            .toD("${exchangeProperty.commandToPullDataFromAzureDataLake}")
-            //.to("azure-storage-datalake:p01d15201500001/cloud-margin?operation=getFile&fileName=cloud-margin-data-set-id/test.csv&dataLakeServiceClient=#dataLakeFileSystemClient&bridgeErrorHandler=false")
+            .to("log:?level=INFO&showBody=true&logMask=true")                 
+            .toD("${exchangeProperty.commandToPullDataFromAzureDataLake}")            
             .log("Data Set has been Pulled Successfully from: ${exchangeProperty.commandToPullDataFromAzureDataLake}")
             .to("log:?level=INFO&showBody=true&logMask=true")
             .log(String.format("Pushing Data Set to %s://%s:%s/%s", sftpSchema, sftpHost, sftpPort, sftpPath))
@@ -222,6 +220,7 @@ public class CloudMarginDataMovingToolRouter extends RouteBuilder {
             .log("Setting Up Header for CamelFileName to Upload to SFTP: " + "${exchangeProperty.CamelFileName}")
             .setHeader("CamelFileName", simple("${exchangeProperty.CamelFileName}"))
             .to(fromFtpUrl.toString())
+            .setHeader(Exchange.HTTP_RESPONSE_CODE, simple("200"))      
             .endRest();
 
         from("direct:blob-azure-subscription-handshake-response")
