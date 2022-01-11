@@ -12,6 +12,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
+import com.azure.cosmos.CosmosAsyncClient;
+import com.azure.cosmos.CosmosClientBuilder;
 import com.azure.storage.file.datalake.DataLakeServiceClient;
 import com.azure.storage.file.datalake.DataLakeServiceClientBuilder;
 import com.zaxxer.hikari.HikariDataSource;
@@ -22,8 +24,15 @@ import com.zaxxer.hikari.HikariDataSource;
 public class CloudMarginDataMovingApplicationConfig {
 	@Value("${sas.token}")
 	protected String sasToken = "";
+
 	@Value("${storage.account.url}")
 	protected String storageAccountUrl = "";
+
+	@Value("${cosmos.key}")
+	protected String cosmosKey= "";
+
+	@Value("${cosmos.serviceEndpoint}")
+	protected String serviceEndpoint = "";
 	
 	private static final Logger LOG = LoggerFactory.getLogger(CloudMarginDataMovingApplicationConfig.class);
 	
@@ -38,6 +47,14 @@ public class CloudMarginDataMovingApplicationConfig {
 		return new DataLakeServiceClientBuilder()
 				.endpoint(storageAccountUrl + "?" + sasToken)														
 				.buildClient();
+	}
+
+	@Bean
+	protected CosmosAsyncClient cosmosAsyncClient () {		
+		return new CosmosClientBuilder()
+							.endpoint(serviceEndpoint)
+							.key(cosmosKey)
+							.buildAsyncClient();
 	}
 
 }

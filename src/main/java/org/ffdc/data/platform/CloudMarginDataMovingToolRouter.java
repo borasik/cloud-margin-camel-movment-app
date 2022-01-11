@@ -4,8 +4,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
@@ -13,6 +15,7 @@ import org.apache.camel.Predicate;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.PredicateBuilder;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.component.azure.cosmosdb.CosmosDbConstants;
 import org.apache.camel.component.jackson.JacksonDataFormat;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.model.rest.RestBindingMode;
@@ -48,7 +51,6 @@ public class CloudMarginDataMovingToolRouter extends RouteBuilder {
     protected int maxRedeliveryAttempts = 0;
     @Value("${app.general.redelivery.delay:1000}")
     protected int redeliveryInterval = 0;
-
     @Value("${app.sftp.schema}")
     protected String sftpSchema;
     @Value("${app.sftp.host}")
@@ -61,12 +63,16 @@ public class CloudMarginDataMovingToolRouter extends RouteBuilder {
     protected String sftpSecret;
     @Value("${app.sftp.path}")
     protected String sftpPath;
+    @Value("${cosmos.data-base-name}")
+    protected String dataBaseName;
+    @Value("${cosmos.container-name}")
+    protected String cosmosContainerName;
 
     private static final Logger CloudMarginDataMovingToolRouterLog = LoggerFactory.getLogger(CloudMarginDataMovingToolRouter.class);
     private static final String Is_Azure_DataLake_Validation_Subscription_Message = "isAzureDataLakeValidationSubscriptionMessage";
 
     @Autowired
-    protected RedeliveryProcessor redeliveryProcessor;
+    protected RedeliveryProcessor redeliveryProcessor;    
 
     @Override
     public void configure() throws URISyntaxException {
@@ -145,7 +151,7 @@ public class CloudMarginDataMovingToolRouter extends RouteBuilder {
                         .to("direct:blob-azure-subscription-handshake-response");
 
         from("direct:get-data-set-from-azure-dl")
-            .log(LoggingLevel.INFO, "Start Pulling Data Set From ADSL...")            
+            .log(LoggingLevel.INFO, "Start Pulling Data Set From ADSL...")                 
             .routeId("get-data-set-from-azure-dl")
             .unmarshal()
             .json(JsonLibrary.Jackson, AzureBlobCreateBlobEventPayload[].class)
@@ -204,13 +210,32 @@ public class CloudMarginDataMovingToolRouter extends RouteBuilder {
                                                              dataSetId + "/" + fileName + "." + fileExtension + 
                                                              "&dataLakeServiceClient=#dataLakeFileSystemClient&bridgeErrorHandler=false";
                 exchange.setProperty("commandToPullDataFromAzureDataLake", commandToPullDataFromAzureDataLake);
-                CloudMarginDataMovingToolRouterLog.info(String.format("commandToPullDataFromAzureDataLake: %s", commandToPullDataFromAzureDataLake);
+                CloudMarginDataMovingToolRouterLog.info(String.format("commandToPullDataFromAzureDataLake: %s", commandToPullDataFromAzureDataLake));
 
                 String fullFileNameToStore = fileName + "_" + new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date()) + "." + fileExtension;
                 exchange.setProperty("CamelFileName", fullFileNameToStore);
                 
-            })
-            .log("Pulling Data Set From: ${exchangeProperty.commandToPullDataFromAzureDataLake}")         
+                // update cosmos ledger
+                UUID documentId = UUID.randomUUID();
+                CloudMarginDataMovingToolRouterLog.info(String.format("KEY: %s", documentId.toString()));
+                final Map<String, Object> item = new HashMap<>();
+                item.put("id",  documentId);
+                item.put("data-set-id", dataSetId);
+                item.put("storage", storageName);
+                item.put("tenant", containerTenantName);
+                item.put("file", fileName + "." + fileExtension);
+                item.put("status", "pulling data set from azure blob storage");
+                item.put("updated-at", new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date()));
+    
+                exchange.getIn().setHeader(CosmosDbConstants.DATABASE_NAME, dataBaseName);
+                exchange.getIn().setHeader(CosmosDbConstants.CONTAINER_NAME, cosmosContainerName);
+                exchange.getIn().setHeader(CosmosDbConstants.CONTAINER_PARTITION_KEY_PATH, "/id");
+                exchange.getIn().setHeader(CosmosDbConstants.ITEM_PARTITION_KEY, documentId);
+                exchange.getIn().setBody(item);
+
+            })           
+            .to("azure-cosmosdb://?operation=createItem&cosmosAsyncClient=#cosmosAsyncClient")
+            .log("Pulling Data Set From: ${exchangeProperty.commandToPullDataFromAzureDataLake}")             
             .to("log:?level=INFO&showBody=true&logMask=true")                 
             .toD("${exchangeProperty.commandToPullDataFromAzureDataLake}")            
             .log("Data Set has been Pulled Successfully from: ${exchangeProperty.commandToPullDataFromAzureDataLake}")
