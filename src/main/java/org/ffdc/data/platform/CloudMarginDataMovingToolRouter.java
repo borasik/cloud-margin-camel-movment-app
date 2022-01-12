@@ -216,8 +216,7 @@ public class CloudMarginDataMovingToolRouter extends RouteBuilder {
                 exchange.setProperty("CamelFileName", fullFileNameToStore);
                 
                 // update cosmos ledger
-                UUID documentId = UUID.randomUUID();
-                CloudMarginDataMovingToolRouterLog.info(String.format("KEY: %s", documentId.toString()));
+                String documentId = UUID.randomUUID().toString();                
                 final Map<String, Object> item = new HashMap<>();
                 item.put("id",  documentId);
                 item.put("data-set-id", dataSetId);
@@ -226,14 +225,15 @@ public class CloudMarginDataMovingToolRouter extends RouteBuilder {
                 item.put("file", fileName + "." + fileExtension);
                 item.put("status", "pulling data set from azure blob storage");
                 item.put("updated-at", new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date()));
+                item.put("_partitionKey", containerTenantName); 
     
                 exchange.getIn().setHeader(CosmosDbConstants.DATABASE_NAME, dataBaseName);
                 exchange.getIn().setHeader(CosmosDbConstants.CONTAINER_NAME, cosmosContainerName);
-                exchange.getIn().setHeader(CosmosDbConstants.CONTAINER_PARTITION_KEY_PATH, "/id");
-                exchange.getIn().setHeader(CosmosDbConstants.ITEM_PARTITION_KEY, documentId);
-                exchange.getIn().setBody(item);
-
-            })           
+                exchange.getIn().setHeader(CosmosDbConstants.CONTAINER_PARTITION_KEY_PATH, "_partitionKey");
+                exchange.getIn().setHeader(CosmosDbConstants.ITEM_PARTITION_KEY, containerTenantName);
+                exchange.getIn().setBody(item);                
+            })     
+            .log("BODY: ${body}")                              
             .to("azure-cosmosdb://?operation=createItem&cosmosAsyncClient=#cosmosAsyncClient")
             .log("Pulling Data Set From: ${exchangeProperty.commandToPullDataFromAzureDataLake}")             
             .to("log:?level=INFO&showBody=true&logMask=true")                 
@@ -245,7 +245,7 @@ public class CloudMarginDataMovingToolRouter extends RouteBuilder {
             .log("Setting Up Header for CamelFileName to Upload to SFTP: " + "${exchangeProperty.CamelFileName}")
             .setHeader("CamelFileName", simple("${exchangeProperty.CamelFileName}"))
             .to(fromFtpUrl.toString())
-            .setHeader(Exchange.HTTP_RESPONSE_CODE, simple("200"))      
+            .setHeader(Exchange.HTTP_RESPONSE_CODE, simple("200"))           
             .endRest();
 
         from("direct:blob-azure-subscription-handshake-response")
