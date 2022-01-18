@@ -13,7 +13,6 @@ public class RedeliveryProcessor implements Processor {
 	@Override
 	public void process(Exchange exchange) throws Exception {
 		LOG.info("Redelivery attempt {}", exchange);
-
 	}
 
 }

@@ -16,6 +16,10 @@ import com.azure.cosmos.CosmosAsyncClient;
 import com.azure.cosmos.CosmosClientBuilder;
 import com.azure.storage.file.datalake.DataLakeServiceClient;
 import com.azure.storage.file.datalake.DataLakeServiceClientBuilder;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.zaxxer.hikari.HikariDataSource;
 
 @Configuration
@@ -56,5 +60,14 @@ public class CloudMarginDataMovingApplicationConfig {
 							.key(cosmosKey)
 							.buildAsyncClient();
 	}
+
+	@Bean
+    public ObjectMapper objectMapper() {
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);    
+		objectMapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);    
+        return objectMapper;
+    }
 
 }

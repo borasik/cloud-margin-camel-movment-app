@@ -1,10 +1,14 @@
 C:\Development\finastra\CLOUD-MARGIN\cloud-margin-data-moving-tool\src\main\java\org\ffdc\data\platform\Handler\ExitHandler.java
 C:\Development\finastra\CLOUD-MARGIN\cloud-margin-data-moving-tool\src\main\java\org\ffdc\data\platform\Helpers\UrlParser.java
+C:\Development\finastra\CLOUD-MARGIN\cloud-margin-data-moving-tool\src\main\java\org\ffdc\data\platform\Processor\UpdateLedgerProcessor.java
 C:\Development\finastra\CLOUD-MARGIN\cloud-margin-data-moving-tool\src\main\java\org\ffdc\data\platform\Models\AzureBlobCreateBlobEventPayload\Data.java
 C:\Development\finastra\CLOUD-MARGIN\cloud-margin-data-moving-tool\src\main\java\org\ffdc\data\platform\Models\AzureBlobSubscriptionValidationResponseBody.java
 C:\Development\finastra\CLOUD-MARGIN\cloud-margin-data-moving-tool\src\main\java\org\ffdc\data\platform\Exceptions\WrongAzureDataLakeEventTypeException.java
 C:\Development\finastra\CLOUD-MARGIN\cloud-margin-data-moving-tool\src\main\java\org\ffdc\data\platform\Models\AzureBlobSubscriptionValidationPayload\Data.java
+C:\Development\finastra\CLOUD-MARGIN\cloud-margin-data-moving-tool\src\main\java\org\ffdc\data\platform\Models\AzureCosmosLedgerPojo.java
+C:\Development\finastra\CLOUD-MARGIN\cloud-margin-data-moving-tool\src\main\java\org\ffdc\data\platform\Models\TenantPojo.java
 C:\Development\finastra\CLOUD-MARGIN\cloud-margin-data-moving-tool\src\main\java\org\ffdc\data\platform\CloudMarginDataMovingApplicationConfig.java
+C:\Development\finastra\CLOUD-MARGIN\cloud-margin-data-moving-tool\src\main\java\org\ffdc\data\platform\Processor\GetDataSetFromAzureStorageProcessor.java
 C:\Development\finastra\CLOUD-MARGIN\cloud-margin-data-moving-tool\src\main\java\org\ffdc\data\platform\Exceptions\WrongAzureBlobMessageTypeException.java
 C:\Development\finastra\CLOUD-MARGIN\cloud-margin-data-moving-tool\src\main\java\org\ffdc\data\platform\Models\AzureBlobCreateBlobEventPayload\StorageDiagnostics.java
 C:\Development\finastra\CLOUD-MARGIN\cloud-margin-data-moving-tool\src\main\java\org\ffdc\data\platform\Exceptions\NullAzureBlobSubscriptionValidationPayloadException.java
