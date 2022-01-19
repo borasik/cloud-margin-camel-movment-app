@@ -85,8 +85,6 @@ public class CloudMarginDataMovingToolRouter extends RouteBuilder {
                 .redeliveryDelay(redeliveryInterval * 1000L).onRedelivery(redeliveryProcessor).logStackTrace(true)
                 .log(LoggingLevel.ERROR, "Exception detected. Quitting...").handled(true)
                 .wireTap("bean:exitHandler?method=errorReport").stop();
-
-        // Call API localhost:8080/api/cloud-margin/v1/camel/pull-data
         rest("pull-data")
             .post()            
             .consumes("application/json")          
