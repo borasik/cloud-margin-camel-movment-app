@@ -19,6 +19,7 @@ import org.ffdc.data.platform.Exceptions.NullAzureBlobSubscriptionValidationPayl
 import org.ffdc.data.platform.Exceptions.WrongAzureBlobMessageTypeException;
 import org.ffdc.data.platform.Models.AzureBlobSubscriptionValidationResponseBody;
 import org.ffdc.data.platform.Models.AzureBlobSubscriptionValidationPayload.AzureBlobSubscriptionValidationPayload;
+import org.ffdc.data.platform.Processor.AcceptedRequestTypeNavigator;
 import org.ffdc.data.platform.Processor.GetDataSetFromAzureStorageProcessor;
 import org.ffdc.data.platform.Processor.RedeliveryProcessor;
 import org.ffdc.data.platform.Processor.UpdateLedgerProcessor;
@@ -32,7 +33,10 @@ public class CloudMarginDataMovingToolRouter extends RouteBuilder {
     private GetDataSetFromAzureStorageProcessor getDataSetFromAzureStorageProcessor;
 
     @Autowired
-    private UpdateLedgerProcessor updateLedgerProcessor;    
+    private UpdateLedgerProcessor updateLedgerProcessor;  
+    
+    @Autowired
+    private AcceptedRequestTypeNavigator acceptedRequestTypeNavigator;  
 
     @Value("${app.general.max.redelivery.attempts:2}")
     protected int maxRedeliveryAttempts = 0;
@@ -49,11 +53,9 @@ public class CloudMarginDataMovingToolRouter extends RouteBuilder {
     @Value("${app.sftp.secret}")
     protected String sftpSecret;
     @Value("${app.sftp.path}")
-    protected String sftpPath;   
+    protected String sftpPath;       
 
-    private static final Logger CloudMarginDataMovingToolRouterLog = LoggerFactory.getLogger(CloudMarginDataMovingToolRouter.class);
-
-    private static final String Is_Azure_DataLake_Validation_Subscription_Message = "isAzureDataLakeValidationSubscriptionMessage";
+    private static final String IS_AZURE_DATA_LAKE_VALIDATION_SUBSCRIPTION_MESSAGE = "IsAzureDataLakeValidationSubscriptionMessage";
 
     @Autowired
     protected RedeliveryProcessor redeliveryProcessor;    
@@ -91,42 +93,12 @@ public class CloudMarginDataMovingToolRouter extends RouteBuilder {
             .route()            
             .marshal()            
             .json(JsonLibrary.Jackson, String.class)            
-            .process(new Processor() {
-                public void process(Exchange exchange) throws Exception {
-                    String body = exchange.getIn().getBody(String.class);
-
-                    String eventSubscriptionValidationHeader = exchange.getIn().getHeader("aeg-event-type", String.class);                    
-
-                    if(eventSubscriptionValidationHeader == null) {
-                        throw new ArgumentEmptyOrBlankException("Event Subscription Validation Header Null. Location: org.ffdc.data.platform.CloudMarginDataMovingToolRouter");
-                    }
-
-                    CloudMarginDataMovingToolRouterLog.info(String.format("Event Subscription Validation Header Received: %s", eventSubscriptionValidationHeader));
-
-                    CloudMarginDataMovingToolRouterLog.info(String.format("Request From Azure Data Lake Received: %s", body));                    
-                    if (eventSubscriptionValidationHeader.equals("Notification")) 
-                    {
-                        exchange.setProperty(Is_Azure_DataLake_Validation_Subscription_Message, "false");
-                        CloudMarginDataMovingToolRouterLog.info(String.format("Blob Change Event From Azure Data Lake Received: %s", body));
-                    } 
-                    else if (eventSubscriptionValidationHeader.equals("SubscriptionValidation")) 
-                    {
-                        exchange.setProperty(Is_Azure_DataLake_Validation_Subscription_Message, "true");                        
-                        CloudMarginDataMovingToolRouterLog.info(String.format("Blob Event Subscription Validation Request From Azure Data Lake Received: %s", body));
-                    } 
-                    else if (eventSubscriptionValidationHeader.equals("SubscriptionDeletion")) 
-                    {                        
-                        CloudMarginDataMovingToolRouterLog.info(String.format("Blob Event 'SubscriptionDeletion' From Azure Data Lake Received: %s...Ignoring...", body));
-                    } 
-                    else {
-                            throw new WrongAzureBlobMessageTypeException("Request Type Received not Recognized (nor blob Event Request nor Validation Request). Location: org.ffdc.data.platform.CloudMarginDataMovingToolRouter");
-                        }
-                    }
-            }).choice()                
-                .when(exchangeProperty(Is_Azure_DataLake_Validation_Subscription_Message)
+            .process(acceptedRequestTypeNavigator)
+            .choice()                
+                .when(exchangeProperty(IS_AZURE_DATA_LAKE_VALIDATION_SUBSCRIPTION_MESSAGE)
                     .isEqualTo("false"))
                         .to("direct:get-data-set-from-azure-dl")
-                .when(exchangeProperty(Is_Azure_DataLake_Validation_Subscription_Message)
+                .when(exchangeProperty(IS_AZURE_DATA_LAKE_VALIDATION_SUBSCRIPTION_MESSAGE)
                     .isEqualTo("true"))
                         .to("direct:blob-azure-subscription-handshake-response");
 

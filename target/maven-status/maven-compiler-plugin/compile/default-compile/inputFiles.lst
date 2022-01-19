@@ -7,6 +7,7 @@ C:\Development\finastra\CLOUD-MARGIN\cloud-margin-data-moving-tool\src\main\java
 C:\Development\finastra\CLOUD-MARGIN\cloud-margin-data-moving-tool\src\main\java\org\ffdc\data\platform\Models\AzureBlobSubscriptionValidationPayload\Data.java
 C:\Development\finastra\CLOUD-MARGIN\cloud-margin-data-moving-tool\src\main\java\org\ffdc\data\platform\Models\AzureCosmosLedgerPojo.java
 C:\Development\finastra\CLOUD-MARGIN\cloud-margin-data-moving-tool\src\main\java\org\ffdc\data\platform\Models\TenantPojo.java
+C:\Development\finastra\CLOUD-MARGIN\cloud-margin-data-moving-tool\src\main\java\org\ffdc\data\platform\Exceptions\AzureCosmosResponseIsEmptyOrNull.java
 C:\Development\finastra\CLOUD-MARGIN\cloud-margin-data-moving-tool\src\main\java\org\ffdc\data\platform\CloudMarginDataMovingApplicationConfig.java
 C:\Development\finastra\CLOUD-MARGIN\cloud-margin-data-moving-tool\src\main\java\org\ffdc\data\platform\Processor\GetDataSetFromAzureStorageProcessor.java
 C:\Development\finastra\CLOUD-MARGIN\cloud-margin-data-moving-tool\src\main\java\org\ffdc\data\platform\Exceptions\WrongAzureBlobMessageTypeException.java
@@ -18,5 +19,6 @@ C:\Development\finastra\CLOUD-MARGIN\cloud-margin-data-moving-tool\src\main\java
 C:\Development\finastra\CLOUD-MARGIN\cloud-margin-data-moving-tool\src\main\java\org\ffdc\data\platform\Exceptions\NullAzureBlobCreateBlobEventPayloadException.java
 C:\Development\finastra\CLOUD-MARGIN\cloud-margin-data-moving-tool\src\main\java\org\ffdc\data\platform\CloudMarginDataMovingToolRouter.java
 C:\Development\finastra\CLOUD-MARGIN\cloud-margin-data-moving-tool\src\main\java\org\ffdc\data\platform\CloudMarginDataMovingToolApplication.java
+C:\Development\finastra\CLOUD-MARGIN\cloud-margin-data-moving-tool\src\main\java\org\ffdc\data\platform\Processor\AcceptedRequestTypeNavigator.java
 C:\Development\finastra\CLOUD-MARGIN\cloud-margin-data-moving-tool\src\main\java\org\ffdc\data\platform\Exceptions\ArgumentEmptyOrBlankException.java
 C:\Development\finastra\CLOUD-MARGIN\cloud-margin-data-moving-tool\src\main\java\org\ffdc\data\platform\Processor\RedeliveryProcessor.java

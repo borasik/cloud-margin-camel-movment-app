@@ -89,7 +89,9 @@ public class UpdateLedgerProcessor implements Processor {
         azureCosmosLedgerPojo.setPartitionKey(containerTenantName);
         azureCosmosLedgerPojo.setProcessingUniqueId(processingUniqueId);
         
-        container.createItem(azureCosmosLedgerPojo, new PartitionKey(azureCosmosLedgerPojo.getPartitionKey()), new CosmosItemRequestOptions());       
+        container.createItem(azureCosmosLedgerPojo, new PartitionKey(azureCosmosLedgerPojo.getPartitionKey()), new CosmosItemRequestOptions());  
+        
+        client.close();
     }
 
     private void createDatabaseIfNotExists() throws Exception {            

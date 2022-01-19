@@ -3,7 +3,6 @@ package org.ffdc.data.platform.Processor;
 import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-
 import com.azure.cosmos.ConsistencyLevel;
 import com.azure.cosmos.CosmosClient;
 import com.azure.cosmos.CosmosClientBuilder;
@@ -19,6 +18,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.ffdc.data.platform.Exceptions.ArgumentEmptyOrBlankException;
+import org.ffdc.data.platform.Exceptions.AzureCosmosResponseIsEmptyOrNull;
 import org.ffdc.data.platform.Exceptions.BlobUrlNotExistsOrEmptyException;
 import org.ffdc.data.platform.Exceptions.NullAzureBlobCreateBlobEventPayloadException;
 import org.ffdc.data.platform.Exceptions.WrongAzureDataLakeEventTypeException;
@@ -139,10 +139,9 @@ public class GetDataSetFromAzureStorageProcessor implements Processor {
         String sql = String.format("SELECT TOP 1 * FROM tenants c WHERE c.ffdctenantname = '%s'", containerTenantName);
 
         CosmosPagedIterable<TenantPojo> selectedTenants = container.queryItems(sql, new CosmosQueryRequestOptions(), TenantPojo.class);
-
-         //// TODO: Create Custom Exception
-        if(selectedTenants == null){
-            throw new Exception("selectedTenants Result is Null or Empty");
+        
+        if(selectedTenants == null || !selectedTenants.iterator().hasNext()){
+            throw new AzureCosmosResponseIsEmptyOrNull("selectedTenants Result is Null or Empty");
         }
 
         if (selectedTenants.iterator().hasNext()) {
@@ -158,8 +157,9 @@ public class GetDataSetFromAzureStorageProcessor implements Processor {
             }
         }
 
+        client.close();
         return "";
-    }
+    }  
 
     private void createDatabaseIfNotExists() throws Exception {            
         CosmosDatabaseResponse databaseResponse = client.createDatabaseIfNotExists(dataBaseName);
