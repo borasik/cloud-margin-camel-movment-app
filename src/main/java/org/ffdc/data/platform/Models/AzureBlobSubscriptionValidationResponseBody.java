@@ -17,7 +17,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 public class AzureBlobSubscriptionValidationResponseBody {
     @JsonProperty("validationResponse")
     private String validationResponse;
-    
+
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 

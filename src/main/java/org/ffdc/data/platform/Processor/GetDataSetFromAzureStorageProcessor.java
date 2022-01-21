@@ -33,8 +33,8 @@ import org.ffdc.data.platform.Helpers.UrlParser;
 
 @Component
 public class GetDataSetFromAzureStorageProcessor implements Processor {
-    
-    private static final Logger Log = LoggerFactory.getLogger(GetDataSetFromAzureStorageProcessor.class);  
+
+    private static final Logger Log = LoggerFactory.getLogger(GetDataSetFromAzureStorageProcessor.class);
 
     @Value("${cosmos.data-base-name}")
     protected String dataBaseName;
@@ -46,7 +46,7 @@ public class GetDataSetFromAzureStorageProcessor implements Processor {
 	protected String cosmosKey= "";
 
     @Value("${cosmos.serviceEndpoint}")
-	protected String serviceEndpoint = "";  
+	protected String serviceEndpoint = "";
 
     private CosmosDatabase database;
     private CosmosContainer container;
@@ -59,29 +59,29 @@ public class GetDataSetFromAzureStorageProcessor implements Processor {
     private ObjectMapper mapper;
 
 	@Override
-	public void process(Exchange exchange) throws Exception {       
-        
+	public void process(Exchange exchange) throws Exception {
+
         String azureBlobCreateBlobEventPayloadString = exchange.getIn().getBody(String.class);
         AzureBlobCreateBlobEventPayload[] azureBlobCreateBlobEventPayload = mapper.readValue(azureBlobCreateBlobEventPayloadString, AzureBlobCreateBlobEventPayload[].class);                   
 
         if(azureBlobCreateBlobEventPayload == null)
         {
             throw new NullAzureBlobCreateBlobEventPayloadException("AzureBlobCreateBlobEventPayload[] is Null. Location: org.ffdc.data.platform.CloudMarginDataMovingToolRouter");
-        }               
+        }
 
-        if(azureBlobCreateBlobEventPayload[0] == null || azureBlobCreateBlobEventPayload[0].getData() == null || 
+        if(azureBlobCreateBlobEventPayload[0] == null || azureBlobCreateBlobEventPayload[0].getData() == null ||
            azureBlobCreateBlobEventPayload[0].getData().getUrl().isEmpty() || azureBlobCreateBlobEventPayload[0].getData().getUrl().isBlank())
         {
                throw new BlobUrlNotExistsOrEmptyException("Blob Url Received in Event Message is Empty or not Exists. Location: Location: org.ffdc.data.platform.CloudMarginDataMovingToolRouter");
         }
-        
+
         if(!azureBlobCreateBlobEventPayload[0].getEventType().equals("Microsoft.Storage.BlobCreated"))
         {
             throw new WrongAzureDataLakeEventTypeException("Data Lake Event Type Received not Equal to Microsoft.Storage.BlobCreated");
-        }        
+        }
 
         URI blobUrl = new URI(azureBlobCreateBlobEventPayload[0].getData().getUrl());
-        
+
         String storageName = urlParser.getStorageName(blobUrl);
         String containerTenantName = urlParser.getContainerTenantName(blobUrl);
         String dataSetId = urlParser.getDataSetId(blobUrl);
@@ -108,24 +108,24 @@ public class GetDataSetFromAzureStorageProcessor implements Processor {
 
         if(fileName.isEmpty() || fileName.isBlank()) {
             throw new ArgumentEmptyOrBlankException("File Name is Blank or Empty. Location: org.ffdc.data.platform.CloudMarginDataMovingToolRouter ");
-        }                     
+        }
 
-        String commandToPullDataFromAzureDataLake = "azure-storage-datalake:" + storageName + 
-                                                    "/" + containerTenantName +                                                             
-                                                    "?operation=getFile" + 
-                                                    "&fileName=" + 
-                                                     dataSetId + "/" + fileName + "." + fileExtension + 
+        String commandToPullDataFromAzureDataLake = "azure-storage-datalake:" + storageName +
+                                                    "/" + containerTenantName +
+                                                    "?operation=getFile" +
+                                                    "&fileName=" +
+                                                     dataSetId + "/" + fileName + "." + fileExtension +
                                                      "&dataLakeServiceClient=#dataLakeFileSystemClient&bridgeErrorHandler=false";
-        exchange.setProperty("commandToPullDataFromAzureDataLake", commandToPullDataFromAzureDataLake);        
+        exchange.setProperty("commandToPullDataFromAzureDataLake", commandToPullDataFromAzureDataLake);
 
         String mcTenantName = mapFfdcTenantToCmTenant(containerTenantName);
 
         String fullFileNameToStore = mcTenantName + "_" + fileName + "_" + dataSetId + "_" + new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date()) + "." + fileExtension;
-        exchange.setProperty("CamelFileName", fullFileNameToStore);         
+        exchange.setProperty("CamelFileName", fullFileNameToStore);
 	}
 
-    public String mapFfdcTenantToCmTenant(String containerTenantName) throws Exception
-    {               
+    private String mapFfdcTenantToCmTenant(String containerTenantName) throws Exception
+    {
         client = new CosmosClientBuilder()
                 .endpoint(serviceEndpoint)
                 .key(cosmosKey)
@@ -139,7 +139,7 @@ public class GetDataSetFromAzureStorageProcessor implements Processor {
         String sql = String.format("SELECT TOP 1 * FROM tenants c WHERE c.ffdctenantname = '%s'", containerTenantName);
 
         CosmosPagedIterable<TenantPojo> selectedTenants = container.queryItems(sql, new CosmosQueryRequestOptions(), TenantPojo.class);
-        
+
         if(selectedTenants == null || !selectedTenants.iterator().hasNext()){
             throw new AzureCosmosResponseIsEmptyOrNull("selectedTenants Result is Null or Empty");
         }
@@ -159,14 +159,14 @@ public class GetDataSetFromAzureStorageProcessor implements Processor {
 
         client.close();
         return "";
-    }  
+    }
 
-    private void createDatabaseIfNotExists() throws Exception {            
+    private void createDatabaseIfNotExists() throws Exception {
         CosmosDatabaseResponse databaseResponse = client.createDatabaseIfNotExists(dataBaseName);
         database = client.getDatabase(databaseResponse.getProperties().getId());
     }
-    
-    private void createContainerIfNotExists() throws Exception {     
+
+    private void createContainerIfNotExists() throws Exception {
         CosmosContainerProperties containerProperties = new CosmosContainerProperties("tenants", "/id");        
         ThroughputProperties throughputProperties = ThroughputProperties.createManualThroughput(400);        
         CosmosContainerResponse containerResponse = database.createContainerIfNotExists(containerProperties, throughputProperties);

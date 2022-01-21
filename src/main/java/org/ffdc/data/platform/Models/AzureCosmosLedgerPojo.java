@@ -63,7 +63,7 @@ public class AzureCosmosLedgerPojo {
     @JsonProperty("datasetid")
     public void setDataSetId(String dataSetId) {
         this.dataSetId = dataSetId;
-    }   
+    }
 
     @JsonProperty("storage")
     public String getStorage() {

@@ -53,16 +53,16 @@ public class CloudMarginDataMovingToolRouter extends RouteBuilder {
     @Value("${app.sftp.secret}")
     protected String sftpSecret;
     @Value("${app.sftp.path}")
-    protected String sftpPath;       
+    protected String sftpPath;
 
     private static final String IS_AZURE_DATA_LAKE_VALIDATION_SUBSCRIPTION_MESSAGE = "IsAzureDataLakeValidationSubscriptionMessage";
 
     @Autowired
-    protected RedeliveryProcessor redeliveryProcessor;    
+    protected RedeliveryProcessor redeliveryProcessor;
 
     @Override
     public void configure() throws URISyntaxException {
-       
+
         URI fromFtpUrl = new URIBuilder()
                     .setScheme(sftpSchema)
                     .setHost(sftpHost)
@@ -70,7 +70,7 @@ public class CloudMarginDataMovingToolRouter extends RouteBuilder {
                     .setPath(sftpPath)
                     .addParameter("username", sftpUsername)
                     .addParameter("password", sftpSecret)
-                    .addParameter("passiveMode", "false")                  
+                    .addParameter("passiveMode", "false")
                     .addParameter("readLock", "changed")
                     .addParameter("readLockMinAge", "1m")
                     .addParameter("readLockTimeout", "70000")
@@ -85,14 +85,15 @@ public class CloudMarginDataMovingToolRouter extends RouteBuilder {
                 .redeliveryDelay(redeliveryInterval * 1000L).onRedelivery(redeliveryProcessor).logStackTrace(true)
                 .log(LoggingLevel.ERROR, "Exception detected. Quitting...").handled(true)
                 .wireTap("bean:exitHandler?method=errorReport").stop();
+
         rest("pull-data")
-            .post()            
-            .consumes("application/json")          
-            .route()            
-            .marshal()            
-            .json(JsonLibrary.Jackson, String.class)            
+            .post()
+            .consumes("application/json")
+            .route()
+            .marshal()
+            .json(JsonLibrary.Jackson, String.class)
             .process(acceptedRequestTypeNavigator)
-            .choice()                
+            .choice()
                 .when(exchangeProperty(IS_AZURE_DATA_LAKE_VALIDATION_SUBSCRIPTION_MESSAGE)
                     .isEqualTo("false"))
                         .to("direct:get-data-set-from-azure-dl")
@@ -107,31 +108,31 @@ public class CloudMarginDataMovingToolRouter extends RouteBuilder {
                     exchange.setProperty("processingUniqueId", processingUniqueId);
                     }
              })
-            .log(LoggingLevel.INFO, "Start Pulling Data Set From ADSL...")            
-            .routeId("get-data-set-from-azure-dl")                                             
-            .process(getDataSetFromAzureStorageProcessor)                   
+            .log(LoggingLevel.INFO, "Start Pulling Data Set From ADSL...")
+            .routeId("get-data-set-from-azure-dl")
+            .process(getDataSetFromAzureStorageProcessor)
 
             .log("BODY: ${body}")
-            .setProperty("ledgerStatus", simple("about to pull data set from azure blob storage"))            
-            .process(updateLedgerProcessor)            
+            .setProperty("ledgerStatus", simple("about to pull data set from azure blob storage"))
+            .process(updateLedgerProcessor)
 
-            .log("Pulling Data Set From: ${exchangeProperty.commandToPullDataFromAzureDataLake}")                         
-            .toD("${exchangeProperty.commandToPullDataFromAzureDataLake}")                        
+            .log("Pulling Data Set From: ${exchangeProperty.commandToPullDataFromAzureDataLake}")
+            .toD("${exchangeProperty.commandToPullDataFromAzureDataLake}")
 
-            .setProperty("ledgerStatus", simple("data set has been pulled successfully from azure storage"))            
-            .process(updateLedgerProcessor)    
+            .setProperty("ledgerStatus", simple("data set has been pulled successfully from azure storage"))
+            .process(updateLedgerProcessor)
 
-            .log(String.format("Pushing Data Set to %s://%s:%s/%s", sftpSchema, sftpHost, sftpPort, sftpPath))                        
+            .log(String.format("Pushing Data Set to %s://%s:%s/%s", sftpSchema, sftpHost, sftpPort, sftpPath))
             .log("Setting Up Header for CamelFileName to Upload to SFTP: " + "${exchangeProperty.CamelFileName}")
-            .setHeader("CamelFileName", simple("${exchangeProperty.CamelFileName}"))           
+            .setHeader("CamelFileName", simple("${exchangeProperty.CamelFileName}"))
             .to(fromFtpUrl.toString())
 
-            .setProperty("ledgerStatus", simple("data set has been pushed successfully to sftp"))            
-            .process(updateLedgerProcessor)                        
-
+            .setProperty("ledgerStatus", simple("data set has been pushed successfully to sftp"))
+            .process(updateLedgerProcessor)
+            .setBody(simple("HTTP_RESPONSE_CODE 200"))
             .setHeader(Exchange.HTTP_RESPONSE_CODE, simple("200"))
-            .endRest();       
-         
+            .endRest();
+
         from("direct:blob-azure-subscription-handshake-response")
             .log("Starting Subscription Validation Process...")
             .unmarshal()
@@ -143,9 +144,9 @@ public class CloudMarginDataMovingToolRouter extends RouteBuilder {
                 {
                     throw new NullAzureBlobSubscriptionValidationPayloadException("AzureBlobSubscriptionValidationPayload[] is Null. Location: org.ffdc.data.platform.CloudMarginDataMovingToolRouter");
                 }
-                
-                String validationCode = azureBlobSubscriptionValidationPayload[0].getData().getValidationCode();                    
-                exchange.setProperty("validationCode", validationCode);                    
+
+                String validationCode = azureBlobSubscriptionValidationPayload[0].getData().getValidationCode();
+                exchange.setProperty("validationCode", validationCode);
 
                 AzureBlobSubscriptionValidationResponseBody azureBlobSubscriptionValidationResponseBody = new AzureBlobSubscriptionValidationResponseBody();
                 azureBlobSubscriptionValidationResponseBody.setValidationResponse(validationCode);
@@ -153,8 +154,8 @@ public class CloudMarginDataMovingToolRouter extends RouteBuilder {
 
             }).routeId("blob-azure-subscription-handshake-response")
                 .log("Sending Validation Code back to Event Grid Subscription ...")
-                .to("log:?level=INFO&showBody=true")            
-                .setHeader(Exchange.HTTP_RESPONSE_CODE, simple("200"))                
-                .endRest();                             
+                .to("log:?level=INFO&showBody=true")
+                .setHeader(Exchange.HTTP_RESPONSE_CODE, simple("200"))
+                .endRest();
     }
 }
