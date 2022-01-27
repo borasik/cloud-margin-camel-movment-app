@@ -1,14 +1,22 @@
 # Documentation
 
+## Url Pattern
+
+Structure:
+'http://blob-url/cloud-margin/ffdc-tenant/data-set-id/file-name.extention'
+
+Sample:
+'https://p01d15201500004.blob.core.windows.net/cloud-margin/sandbox/collateral-agreement-initial-margin-v1/2021-11-16T16:40:40.494Z.csv'
+
 ## API Url Application listening on
 
 ### Subscription / Move Data API
 
 - localhost:8080/api/cloud-margin/v1/camel/pull-data
-  
+
 ### Onboarding API [Add new tenant to mapping table]
 
-- localhost:8080/
+- localhost:8080/XXX
 
 ## Usefully References
 

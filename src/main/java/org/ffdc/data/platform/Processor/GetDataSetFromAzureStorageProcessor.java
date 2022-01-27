@@ -83,18 +83,20 @@ public class GetDataSetFromAzureStorageProcessor implements Processor {
         URI blobUrl = new URI(azureBlobCreateBlobEventPayload[0].getData().getUrl());
 
         String storageName = urlParser.getStorageName(blobUrl);
-        String containerTenantName = urlParser.getContainerTenantName(blobUrl);
+        String containerName = urlParser.getContainerName(blobUrl);
         String dataSetId = urlParser.getDataSetId(blobUrl);
         String fileName = urlParser.getFileName(blobUrl);
         String fileExtension = urlParser.getFileExtension(blobUrl);
+        String tenantName = urlParser.getTenantName(blobUrl);
 
         exchange.setProperty("storageName", storageName);
-        exchange.setProperty("containerTenantName", containerTenantName);
+        exchange.setProperty("containerName", containerName);
         exchange.setProperty("dataSetId", dataSetId);
         exchange.setProperty("fileName", fileName);
         exchange.setProperty("fileExtension", fileExtension);
+        exchange.setProperty("tenantName", tenantName);
 
-        if(containerTenantName.isEmpty() || containerTenantName.isBlank()) {
+        if(containerName.isEmpty() || containerName.isBlank()) {
             throw new ArgumentEmptyOrBlankException("Storage Name is Blank or Empty. Location: org.ffdc.data.platform.CloudMarginDataMovingToolRouter ");
         }
 
@@ -111,14 +113,15 @@ public class GetDataSetFromAzureStorageProcessor implements Processor {
         }
 
         String commandToPullDataFromAzureDataLake = "azure-storage-datalake:" + storageName +
-                                                    "/" + containerTenantName +
+                                                    "/" + containerName +
                                                     "?operation=getFile" +
                                                     "&fileName=" +
-                                                     dataSetId + "/" + fileName + "." + fileExtension +
+                                                    tenantName + "/" + dataSetId + "/" + fileName + "." + fileExtension +
                                                      "&dataLakeServiceClient=#dataLakeFileSystemClient&bridgeErrorHandler=false";
+
         exchange.setProperty("commandToPullDataFromAzureDataLake", commandToPullDataFromAzureDataLake);
 
-        String mcTenantName = mapFfdcTenantToCmTenant(containerTenantName);
+        String mcTenantName = mapFfdcTenantToCmTenant(tenantName);
 
         String fullFileNameToStore = mcTenantName + "_" + fileName + "_" + dataSetId + "_" + new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date()) + "." + fileExtension;
         exchange.setProperty("CamelFileName", fullFileNameToStore);
@@ -126,6 +129,8 @@ public class GetDataSetFromAzureStorageProcessor implements Processor {
 
     private String mapFfdcTenantToCmTenant(String containerTenantName) throws Exception
     {
+        Log.info("Start Fetching Tenant Mapping for Tenant: {}", containerTenantName);
+
         client = new CosmosClientBuilder()
                 .endpoint(serviceEndpoint)
                 .key(cosmosKey)
@@ -141,13 +146,14 @@ public class GetDataSetFromAzureStorageProcessor implements Processor {
         CosmosPagedIterable<TenantPojo> selectedTenants = container.queryItems(sql, new CosmosQueryRequestOptions(), TenantPojo.class);
 
         if(selectedTenants == null || !selectedTenants.iterator().hasNext()){
-            throw new AzureCosmosResponseIsEmptyOrNull("selectedTenants Result is Null or Empty");
+            throw new AzureCosmosResponseIsEmptyOrNull("selectedTenants Result is Null or Empty in GetDataSetFromAzureStorageProcessor.process.mapFfdcTenantToCmTenant()");
         }
 
         if (selectedTenants.iterator().hasNext()) {
             TenantPojo tenantPojo = selectedTenants.iterator().next();
             if(tenantPojo != null && !tenantPojo.getCmTenantName().isEmpty() && !tenantPojo.getCmTenantName().isBlank())
             {
+                Log.info("Tenant Mapping for Tenant: {} Successful to Tenant {}", containerTenantName, tenantPojo.getCmTenantName());
                 return tenantPojo.getCmTenantName();
             }
             else

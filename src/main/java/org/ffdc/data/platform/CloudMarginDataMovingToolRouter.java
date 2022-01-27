@@ -75,13 +75,13 @@ public class CloudMarginDataMovingToolRouter extends RouteBuilder {
                     .addParameter("readLockMinAge", "1m")
                     .addParameter("readLockTimeout", "70000")
                     .addParameter("readLockCheckInterval", "5000")
-                    .addParameter("stepwise", "false")    
-                    .addParameter("useUserKnownHostsFile", "false")            
+                    .addParameter("stepwise", "false")
+                    .addParameter("useUserKnownHostsFile", "false")
                     .build();
-       
-        restConfiguration().component("servlet").bindingMode(RestBindingMode.json);        
 
-        onException(Exception.class).maximumRedeliveries(maxRedeliveryAttempts)        
+        restConfiguration().component("servlet").bindingMode(RestBindingMode.json);
+
+        onException(Exception.class).maximumRedeliveries(maxRedeliveryAttempts)
                 .redeliveryDelay(redeliveryInterval * 1000L).onRedelivery(redeliveryProcessor).logStackTrace(true)
                 .log(LoggingLevel.ERROR, "Exception detected. Quitting...").handled(true)
                 .wireTap("bean:exitHandler?method=errorReport").stop();
