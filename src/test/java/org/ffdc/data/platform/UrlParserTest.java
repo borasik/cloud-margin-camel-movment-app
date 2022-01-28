@@ -45,8 +45,28 @@ public class UrlParserTest {
     }
 
     @Test
+    public void getFullFileNameValidUrl() throws URISyntaxException  {
+        URI url = new URI("https://p01d15201500004.blob.core.windows.net/cloud-margin/sandbox/collateral-agreement-initial-margin-v1/2021-11-16T16:40:40.494Z.csv");
+        UrlParser urlParser = new UrlParser();
+        String fullName = urlParser.getFullFileName(url);
+
+        assertNotEquals("", fullName);
+        assertEquals("2021-11-16T16:40:40.494Z.csv", fullName);
+    }
+
+    @Test
     public void getFileExtensionFromValidUrl() throws URISyntaxException  {
         URI url = new URI("https://p01d15201500004.blob.core.windows.net/cloud-margin/sandbox/collateral-agreement-initial-margin-v1/2021-11-16T16:40:40.494Z.csv");
+        UrlParser urlParser = new UrlParser();
+        String extension = urlParser.getFileExtension(url);
+
+        assertNotEquals("", extension);
+        assertEquals("csv", extension);
+    }
+
+    @Test
+    public void getFileExtensionFromValidUrlWithNoPeriodInFileName() throws URISyntaxException  {
+        URI url = new URI("https://p01d15201500004.blob.core.windows.net/cloud-margin/sandbox/collateral-agreement-initial-margin-v1/2021-01-28T01:01:01-01:00.csv");
         UrlParser urlParser = new UrlParser();
         String extension = urlParser.getFileExtension(url);
 
@@ -58,10 +78,10 @@ public class UrlParserTest {
     public void getFileNameFromValidUrl() throws URISyntaxException  {
         URI url = new URI("https://p01d15201500004.blob.core.windows.net/cloud-margin/sandbox/collateral-agreement-initial-margin-v1/2021-11-16T16:40:40.494Z.csv");
         UrlParser urlParser = new UrlParser();
-        String extension = urlParser.getFileName(url);
+        String fileName = urlParser.getFileName(url);
 
-        assertNotEquals("", extension);
-        assertEquals("2021-11-16T16:40:40.494Z", extension);
+        assertNotEquals("", fileName);
+        assertEquals("2021-11-16T16:40:40.494Z", fileName);
     }
 }
 

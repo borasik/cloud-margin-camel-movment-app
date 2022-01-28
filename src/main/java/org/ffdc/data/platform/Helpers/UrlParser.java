@@ -59,6 +59,19 @@ public class UrlParser {
         return "";
     }
 
+    public String getFullFileName(URI uriToParse)
+    {
+        String path = uriToParse.getPath().substring(1, uriToParse.getPath().length());
+        String[] pathArray = path.split("\\/");
+
+        if(pathArray.length > 3)
+        {
+                return pathArray[3];
+        }
+
+        return "";
+    }
+
     public String getFileName(URI uriToParse)
     {
         String path = uriToParse.getPath().substring(1, uriToParse.getPath().length());
@@ -84,9 +97,9 @@ public class UrlParser {
         if(pathArray.length > 2)
         {
             String[] fileNameSplitted = pathArray[3].split("\\.");
-            if(fileNameSplitted.length > 2)
+            if(fileNameSplitted.length > 0)
             {
-                return fileNameSplitted[2];
+                return fileNameSplitted[fileNameSplitted.length - 1];
             }
         }
 

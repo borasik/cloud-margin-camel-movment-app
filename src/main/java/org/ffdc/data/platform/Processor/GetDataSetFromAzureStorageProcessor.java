@@ -88,6 +88,7 @@ public class GetDataSetFromAzureStorageProcessor implements Processor {
         String fileName = urlParser.getFileName(blobUrl);
         String fileExtension = urlParser.getFileExtension(blobUrl);
         String tenantName = urlParser.getTenantName(blobUrl);
+        String fullFileName = urlParser.getFullFileName(blobUrl);
 
         exchange.setProperty("storageName", storageName);
         exchange.setProperty("containerName", containerName);
@@ -95,6 +96,7 @@ public class GetDataSetFromAzureStorageProcessor implements Processor {
         exchange.setProperty("fileName", fileName);
         exchange.setProperty("fileExtension", fileExtension);
         exchange.setProperty("tenantName", tenantName);
+        exchange.setProperty("fullFileName", fullFileName);
 
         if(containerName.isEmpty() || containerName.isBlank()) {
             throw new ArgumentEmptyOrBlankException("Storage Name is Blank or Empty. Location: org.ffdc.data.platform.CloudMarginDataMovingToolRouter ");
@@ -116,14 +118,14 @@ public class GetDataSetFromAzureStorageProcessor implements Processor {
                                                     "/" + containerName +
                                                     "?operation=getFile" +
                                                     "&fileName=" +
-                                                    tenantName + "/" + dataSetId + "/" + fileName + "." + fileExtension +
+                                                    tenantName + "/" + dataSetId + "/" + fullFileName +
                                                      "&dataLakeServiceClient=#dataLakeFileSystemClient&bridgeErrorHandler=false";
 
         exchange.setProperty("commandToPullDataFromAzureDataLake", commandToPullDataFromAzureDataLake);
 
         String mcTenantName = mapFfdcTenantToCmTenant(tenantName);
 
-        String fullFileNameToStore = mcTenantName + "_" + fileName + "_" + dataSetId + "_" + new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date()) + "." + fileExtension;
+        String fullFileNameToStore = mcTenantName + "_" + dataSetId + "_" + new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date()) + "." + fileExtension;
         exchange.setProperty("CamelFileName", fullFileNameToStore);
 	}
 
