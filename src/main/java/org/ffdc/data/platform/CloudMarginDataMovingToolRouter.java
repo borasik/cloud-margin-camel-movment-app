@@ -19,7 +19,7 @@ import org.ffdc.data.platform.Exceptions.NullAzureBlobSubscriptionValidationPayl
 import org.ffdc.data.platform.Exceptions.WrongAzureBlobMessageTypeException;
 import org.ffdc.data.platform.Models.AzureBlobSubscriptionValidationResponseBody;
 import org.ffdc.data.platform.Models.AzureBlobSubscriptionValidationPayload.AzureBlobSubscriptionValidationPayload;
-import org.ffdc.data.platform.Processor.AcceptedRequestTypeNavigator;
+import org.ffdc.data.platform.Processor.AcceptedRequestTypeNavigatorProcessor;
 import org.ffdc.data.platform.Processor.GetDataSetFromAzureStorageProcessor;
 import org.ffdc.data.platform.Processor.RedeliveryProcessor;
 import org.ffdc.data.platform.Processor.UpdateLedgerProcessor;
@@ -27,16 +27,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Component
-public class CloudMarginDataMovingToolRouter extends RouteBuilder {  
+public class CloudMarginDataMovingToolRouter extends RouteBuilder {
 
     @Autowired
     private GetDataSetFromAzureStorageProcessor getDataSetFromAzureStorageProcessor;
 
     @Autowired
-    private UpdateLedgerProcessor updateLedgerProcessor;  
-    
+    private UpdateLedgerProcessor updateLedgerProcessor;
+
     @Autowired
-    private AcceptedRequestTypeNavigator acceptedRequestTypeNavigator;  
+    private AcceptedRequestTypeNavigatorProcessor acceptedRequestTypeNavigatorProcessor;
 
     @Value("${app.general.max.redelivery.attempts:2}")
     protected int maxRedeliveryAttempts = 0;
@@ -92,7 +92,7 @@ public class CloudMarginDataMovingToolRouter extends RouteBuilder {
             .route()
             .marshal()
             .json(JsonLibrary.Jackson, String.class)
-            .process(acceptedRequestTypeNavigator)
+            .process(acceptedRequestTypeNavigatorProcessor)
             .choice()
                 .when(exchangeProperty(IS_AZURE_DATA_LAKE_VALIDATION_SUBSCRIPTION_MESSAGE)
                     .isEqualTo("false"))

@@ -17,7 +17,6 @@ org\ffdc\data\platform\CloudMarginDataMovingToolRouter.class
 org\ffdc\data\platform\CloudMarginDataMovingApplicationConfig.class
 org\ffdc\data\platform\Models\AzureBlobSubscriptionValidationPayload\AzureBlobSubscriptionValidationPayload.class
 org\ffdc\data\platform\Exceptions\WrongAzureDataLakeEventTypeException.class
-org\ffdc\data\platform\Processor\AcceptedRequestTypeNavigator.class
 org\ffdc\data\platform\Exceptions\NullAzureBlobSubscriptionValidationPayloadException.class
 org\ffdc\data\platform\Handler\ExitHandler.class
 org\ffdc\data\platform\Processor\UpdateLedgerProcessor.class

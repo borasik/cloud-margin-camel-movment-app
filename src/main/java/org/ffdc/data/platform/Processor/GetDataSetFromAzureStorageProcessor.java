@@ -160,8 +160,7 @@ public class GetDataSetFromAzureStorageProcessor implements Processor {
             }
             else
             {
-                //// TODO: Create Custom Exception
-                throw new Exception("TenantPojo is Null or Empty");
+                throw new AzureCosmosResponseIsEmptyOrNull("TenantPojo is Null or Empty in GetDataSetFromAzureStorageProcessor.process.mapFfdcTenantToCmTenant()");
             }
         }
 
@@ -175,9 +174,9 @@ public class GetDataSetFromAzureStorageProcessor implements Processor {
     }
 
     private void createContainerIfNotExists() throws Exception {
-        CosmosContainerProperties containerProperties = new CosmosContainerProperties("tenants", "/id");        
-        ThroughputProperties throughputProperties = ThroughputProperties.createManualThroughput(400);        
+        CosmosContainerProperties containerProperties = new CosmosContainerProperties("tenants", "/id");
+        ThroughputProperties throughputProperties = ThroughputProperties.createManualThroughput(400);
         CosmosContainerResponse containerResponse = database.createContainerIfNotExists(containerProperties, throughputProperties);
-        container = database.getContainer(containerResponse.getProperties().getId());        
+        container = database.getContainer(containerResponse.getProperties().getId());
     }
 }
