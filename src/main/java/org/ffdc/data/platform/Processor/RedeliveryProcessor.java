@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class RedeliveryProcessor implements Processor {
 	private static final Logger LOG = LoggerFactory.getLogger(RedeliveryProcessor.class);
-	
+
 	@Override
 	public void process(Exchange exchange) throws Exception {
 		LOG.info("Redelivery attempt {}", exchange);

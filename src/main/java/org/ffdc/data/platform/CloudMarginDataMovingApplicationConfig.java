@@ -41,12 +41,12 @@ public class CloudMarginDataMovingApplicationConfig {
 
 	private static final Logger LOG = LoggerFactory.getLogger(CloudMarginDataMovingApplicationConfig.class);
 
-	// @Bean
-	// @ConfigurationProperties("app.datasource")
-	// public DataSource dataLakeIntegrationDs()
-	// {
-	// 	return DataSourceBuilder.create().type(HikariDataSource.class).build();
-	// }
+	@Bean
+	@ConfigurationProperties("app.datasource")
+	public DataSource dataLakeIntegrationDs()
+	{
+		return DataSourceBuilder.create().type(HikariDataSource.class).build();
+	}
 
 	@Bean
 	protected DataLakeServiceClient dataLakeFileSystemClient()
